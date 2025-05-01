@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diego & Valery - Control de Gastos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f7f7f7;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .section {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .progress {
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+            margin-top: 5px;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4caf50;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🏠 Diego & Valery - Control de gastos</h1>
+
+    <div class="section">
+        <h2>💵 Gastos este mes:</h2>
+        <p>Diego: S/. <span id="gasto-diego">0</span></p>
+        <p>Valery: S/. <span id="gasto-valery">0</span></p>
+    </div>
+
+    <div class="section">
+        <h2>💰 Deudas de alcancía:</h2>
+        <p>Diego debe: S/. <span id="deuda-diego">0</span></p>
+        <p>Valery debe: S/. <span id="deuda-valery">0</span></p>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Metas:</h2>
+        <p>Refrigeradora</p>
+        <div class="progress"><div id="meta-refrigeradora" class="progress-bar"></div></div>
+
+        <p>Lavadora</p>
+        <div class="progress"><div id="meta-lavadora" class="progress-bar"></div></div>
+
+        <p>Powerbank</p>
+        <div class="progress"><div id="meta-powerbank" class="progress-bar"></div></div>
+    </div>
+
+    <div class="section">
+        <button onclick="agregarGasto()">➕ Añadir gasto</button>
+        <button onclick="agregarDeuda()">➕ Añadir aporte alcancía</button>
+        <button onclick="aportarMeta()">➕ Aportar a meta</button>
+    </div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBzwn-PmnNcCMdny2ysuZXGfqNek6rA3WY",
+    authDomain: "gastosdv-3ed0b.firebaseapp.com",
+    projectId: "gastosdv-3ed0b",
+    storageBucket: "gastosdv-3ed0b.firebasestorage.app",
+    messagingSenderId: "695213874575",
+    appId: "1:695213874575:web:9ab92db723eb609369fffa",
+    measurementId: "G-PBNQVY0PTC"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let gastoDiego = 0;
+  let gastoValery = 0;
+  let deudaDiego = 0;
+  let deudaValery = 0;
+  let metaRefrigeradora = 0; // porcentaje
+  let metaLavadora = 0;
+  let metaPowerbank = 0;
+
+  function actualizarPantalla() {
+      document.getElementById('gasto-diego').textContent = gastoDiego.toFixed(2);
+      document.getElementById('gasto-valery').textContent = gastoValery.toFixed(2);
+      document.getElementById('deuda-diego').textContent = deudaDiego.toFixed(2);
+      document.getElementById('deuda-valery').textContent = deudaValery.toFixed(2);
+      document.getElementById('meta-refrigeradora').style.width = metaRefrigeradora + '%';
+      document.getElementById('meta-lavadora').style.width = metaLavadora + '%';
+      document.getElementById('meta-powerbank').style.width = metaPowerbank + '%';
+  }
+
+  async function agregarGasto() {
+      const persona = prompt('¿Quién gastó? (Diego/Valery)').toLowerCase();
+      const monto = parseFloat(prompt('¿Cuánto gastó?'));
+      const categoria = prompt('¿Categoría? (comida, pasaje, ropa, etc.)').toLowerCase();
+      const fecha = new Date().toISOString();
+
+      try {
+        await db.collection('gastos').add({
+          persona: persona,
+          monto: monto,
+          categoria: categoria,
+          fecha: fecha
+        });
+        alert('✅ Gasto registrado exitosamente en Firebase!');
+      } catch (error) {
+        console.error('❌ Error al registrar gasto:', error);
+        alert('❌ Error al registrar gasto.');
+      }
+  }
+
+  async function agregarDeuda() {
+      const persona = prompt('¿Quién debe añadir a la alcancía? (Diego/Valery)').toLowerCase();
+      const monto = parseFloat(prompt('¿Cuánto debe añadir?'));
+      const tipo = prompt('¿Tipo de deuda? (lisura/fin de mes)').toLowerCase();
+      const fecha = new Date().toISOString();
+
+      try {
+        await db.collection('deudas').add({
+          persona: persona,
+          monto: monto,
+          tipo: tipo,
+          fecha: fecha
+        });
+        alert('✅ Deuda registrada exitosamente en Firebase!');
+      } catch (error) {
+        console.error('❌ Error al registrar deuda:', error);
+        alert('❌ Error al registrar deuda.');
+      }
+  }
+
+  function cargarGastos() {
+      db.collection('gastos').onSnapshot((querySnapshot) => {
+        gastoDiego = 0;
+        gastoValery = 0;
+
+        querySnapshot.forEach((doc) => {
+          const gasto = doc.data();
+          if (gasto.persona === 'diego') gastoDiego += gasto.monto;
+          if (gasto.persona === 'valery') gastoValery += gasto.monto;
+        });
+
+        actualizarPantalla();
+      });
+  }
+
+  function cargarDeudas() {
+      db.collection('deudas').onSnapshot((querySnapshot) => {
+        deudaDiego = 0;
+        deudaValery = 0;
+
+        querySnapshot.forEach((doc) => {
+          const deuda = doc.data();
+          if (deuda.persona === 'diego') deudaDiego += deuda.monto;
+          if (deuda.persona === 'valery') deudaValery += deuda.monto;
+        });
+
+        actualizarPantalla();
+      });
+  }
+
+  function aportarMeta() {
+      let meta = prompt('¿A qué meta quieres aportar? (refrigeradora/lavadora/powerbank)').toLowerCase();
+      let porcentaje = parseFloat(prompt('¿Cuánto porcentaje quieres aumentar? (ejemplo: 5 para 5%)'));
+      if (meta === 'refrigeradora') metaRefrigeradora += porcentaje;
+      else if (meta === 'lavadora') metaLavadora += porcentaje;
+      else if (meta === 'powerbank') metaPowerbank += porcentaje;
+      actualizarPantalla();
+  }
+
+  actualizarPantalla();
+  cargarGastos();
+  cargarDeudas();
+</script>
+
+</body>
+</html>
