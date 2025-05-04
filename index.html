@@ -1,509 +1,156 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diego & Valery - Control de Gastos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f7f7f7;
-        }
 
-        h1,
-        h2 {
-            color: #333;
-        }
+    <!-- Estilos -->
+    <link rel="stylesheet" href="style.css">
 
-        .section {
-            margin-bottom: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        button {
-            margin: 5px;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .progress {
-            background-color: #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-            height: 20px;
-            margin-top: 5px;
-        }
-
-        .progress-bar {
-            height: 20px;
-            background-color: #4caf50;
-            width: 0%;
-        }
-
-        #splash {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #4caf50;
-            z-index: 9999;
-            transition: opacity 1s ease;
-        }
-    </style>
-</head>
-
-<body>
-    <div id="splash">
-        <h1>¡Bienvenido Diego & Valery!</h1>
-        <p>Cargando su progreso...</p>
-    </div>
-
-    <h1>🏠 Diego & Valery - Control de gastos V10</h1>
-
-    <div class="section">
-        <h2>💵 Gastos este mes:</h2>
-        <p>Diego: S/. <span id="gasto-diego">0</span></p>
-        <p>Valery: S/. <span id="gasto-valery">0</span></p>
-    </div>
-    <div class="section">
-        <h2>💵 Ingresos este mes:</h2>
-        <p>Diego: S/. <span id="ingreso-diego">0</span></p>
-        <p>Valery: S/. <span id="ingreso-valery">0</span></p>
-    </div>
-
-    <div class="section">
-        <h2>💰 Deudas de alcancía:</h2>
-        <p>Diego debe: S/. <span id="deuda-diego">0</span></p>
-        <p>Valery debe: S/. <span id="deuda-valery">0</span></p>
-    </div>
-
-    <div class="section">
-        <h2>🎯 Metas:</h2>
-
-        <p>Refrigeradora</p>
-        <img id="img-refrigeradora"
-            src="https://firebasestorage.googleapis.com/v0/b/delivery-mysql-aecae.appspot.com/o/refri.png?alt=media&token=c8d9c391-f924-4d79-a385-d62842148ed8"
-            width="120" alt="Refrigeradora">
-        <div class="progress">
-            <div id="meta-refrigeradora" class="progress-bar"></div>
-        </div>
-
-        <p>Lavadora</p>
-        <img id="img-lavadora"
-            src="https://firebasestorage.googleapis.com/v0/b/delivery-mysql-aecae.appspot.com/o/lavadora.png?alt=media&token=796cc4b9-d108-4a5e-b984-d121353b485c"
-            width="120" alt="Lavadora">
-        <div class="progress">
-            <div id="meta-lavadora" class="progress-bar"></div>
-        </div>
-
-        <p>Powerbank (Cargador portátil)</p>
-        <img id="img-powerbank"
-            src="https://firebasestorage.googleapis.com/v0/b/delivery-mysql-aecae.appspot.com/o/pw45.png?alt=media&token=ab863c6f-2dd6-4fa4-ac7d-3bda8fcac987"
-            width="120" alt="Powerbank">
-        <div class="progress">
-            <div id="meta-powerbank" class="progress-bar"></div>
-        </div>
-
-        <p>Licuadora</p>
-        <img id="img-licuadora"
-            src="https://firebasestorage.googleapis.com/v0/b/delivery-mysql-aecae.appspot.com/o/licuadora.png?alt=media&token=b2f48ab2-2c16-4473-ae2b-ef4227bb512c"
-            width="120" alt="Licuadora">
-        <div class="progress">
-            <div id="meta-licuadora" class="progress-bar"></div>
-        </div>
-
-        <p>4to Piso</p>
-        <img id="img-cuarto-piso"
-            src="https://firebasestorage.googleapis.com/v0/b/delivery-mysql-aecae.appspot.com/o/hq720%20(1).png?alt=media&token=9261cd6c-96d3-4446-a8b4-afb7c3cb2a65"
-            width="120" alt="4to Piso">
-        <div class="progress">
-            <div id="meta-cuarto-piso" class="progress-bar"></div>
-        </div>
-
-    </div>
-    <div class="section">
-        <h2>📄 Historial de Gastos</h2>
-        <table id="tabla-gastos" border="1" cellpadding="5" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Persona</th>
-                    <th>Monto (S/.)</th>
-                    <th>Categoría</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="section">
-        <h2>📄 Historial de Deudas</h2>
-        <table id="tabla-deudas" border="1" cellpadding="5" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Persona</th>
-                    <th>Monto (S/.)</th>
-                    <th>Tipo</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-    <div class="section">
-        <button onclick="agregarGasto()">➕ Añadir gasto</button>
-        <button onclick="agregarDeuda()">➕ Añadir aporte alcancía</button>
-        <button onclick="aportarMeta()">➕ Aportar a meta</button>
-    </div>
-    <div class="section">
-        <button onclick="registrarIngresoDiego()">➕ Registrar ingreso Diego</button>
-        <button onclick="registrarIngresoValery()">➕ Registrar ingreso Valery</button>
-    </div>
-    <div class="section">
-        <button onclick="registrarFinDeMes()">➕ Registrar fin de mes (30 soles)</button>
-    </div>
-
-    <!-- Firebase SDK -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBzwn-PmnNcCMdny2ysuZXGfqNek6rA3WY",
-            authDomain: "gastosdv-3ed0b.firebaseapp.com",
-            projectId: "gastosdv-3ed0b",
-            storageBucket: "gastosdv-3ed0b.firebasestorage.app",
-            messagingSenderId: "695213874575",
-            appId: "1:695213874575:web:9ab92db723eb609369fffa",
-            measurementId: "G-PBNQVY0PTC"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let gastoDiego = 0;
-        let gastoValery = 0;
-        let deudaDiego = 0;
-        let deudaValery = 0;
-        let metaRefrigeradora = 0; // porcentaje
-        let metaLavadora = 0;
-        let metaPowerbank = 0;
-        let ingresoDiego = 0;
-        let ingresoValery = 0;
-
-        function actualizarPantalla() {
-            document.getElementById('gasto-diego').textContent = gastoDiego.toFixed(2);
-            document.getElementById('gasto-valery').textContent = gastoValery.toFixed(2);
-            document.getElementById('deuda-diego').textContent = deudaDiego.toFixed(2);
-            document.getElementById('deuda-valery').textContent = deudaValery.toFixed(2);
-            document.getElementById('meta-refrigeradora').style.width = metaRefrigeradora + '%';
-            document.getElementById('meta-lavadora').style.width = metaLavadora + '%';
-            document.getElementById('meta-powerbank').style.width = metaPowerbank + '%';
-            document.getElementById('ingreso-diego').textContent = ingresoDiego.toFixed(2);
-            document.getElementById('ingreso-valery').textContent = ingresoValery.toFixed(2);
-            actualizarImagenesMetas();
-
-        }
-
-        async function agregarGasto() {
-            const persona = prompt('¿Quién gastó? (Diego/Valery)').toLowerCase();
-            const monto = parseFloat(prompt('¿Cuánto gastó?'));
-            const categoria = prompt('¿Categoría? (comida, pasaje, ropa, etc.)').toLowerCase();
-            const fecha = new Date().toISOString();
-
-            try {
-                await db.collection('gastos').add({
-                    persona: persona,
-                    monto: monto,
-                    categoria: categoria,
-                    fecha: fecha
-                });
-                alert('✅ Gasto registrado exitosamente en Firebase!');
-            } catch (error) {
-                console.error('❌ Error al registrar gasto:', error);
-                alert('❌ Error al registrar gasto.');
-            }
-            actualizarImagenesMetas();
-        }
-
-        async function agregarDeuda() {
-            const persona = prompt('¿Quién debe añadir a la alcancía? (Diego/Valery)').toLowerCase();
-            const monto = parseFloat(prompt('¿Cuánto debe añadir?'));
-            const tipo = prompt('¿Tipo de deuda? (lisura/fin de mes)').toLowerCase();
-            const fecha = new Date().toISOString();
-
-            try {
-                await db.collection('deudas').add({
-                    persona: persona,
-                    monto: monto,
-                    tipo: tipo,
-                    fecha: fecha
-                });
-                alert('✅ Deuda registrada exitosamente en Firebase!');
-            } catch (error) {
-                console.error('❌ Error al registrar deuda:', error);
-                alert('❌ Error al registrar deuda.');
-            }
-        }
-
-        function cargarGastos() {
-            db.collection('gastos').onSnapshot((querySnapshot) => {
-                gastoDiego = 0;
-                gastoValery = 0;
-
-                querySnapshot.forEach((doc) => {
-                    const gasto = doc.data();
-                    if (gasto.persona === 'diego') gastoDiego += gasto.monto;
-                    if (gasto.persona === 'valery') gastoValery += gasto.monto;
-                });
-
-                actualizarPantalla();
-            });
-        }
-
-        function cargarDeudas() {
-            db.collection('deudas').onSnapshot((querySnapshot) => {
-                deudaDiego = 0;
-                deudaValery = 0;
-
-                const tablaDeudas = document.querySelector('#tabla-deudas tbody');
-                tablaDeudas.innerHTML = ''; // Limpiar tabla antes de volver a llenar
-
-                querySnapshot.forEach((doc) => {
-                    const deuda = doc.data();
-                    if (deuda.persona === 'diego') deudaDiego += deuda.monto;
-                    if (deuda.persona === 'valery') deudaValery += deuda.monto;
-
-                    const fila = document.createElement('tr');
-                    fila.innerHTML = `
-                <td>${deuda.persona.charAt(0).toUpperCase() + deuda.persona.slice(1)}</td>
-                <td>${deuda.monto.toFixed(2)}</td>
-                <td>${deuda.tipo}</td>
-                <td>${new Date(deuda.fecha).toLocaleDateString()}</td>
-            `;
-                    tablaDeudas.appendChild(fila);
-                });
-
-                actualizarPantalla();
-            });
-        }
-
-        async function aportarMeta() {
-            let meta = prompt('¿A qué meta quieres aportar? (refrigeradora/lavadora/powerbank)').toLowerCase();
-            let monto = parseFloat(prompt('¿Cuánto dinero quieres aportar en soles? (Ejemplo: 100)'));
-            const fecha = new Date().toISOString();
-
-            if (!preciosMetas[meta]) {
-                alert('❌ Meta no válida.');
-                return;
-            }
-
-            if (isNaN(monto) || monto <= 0) {
-                alert('❌ Debes ingresar un monto válido mayor a 0.');
-                return;
-            }
-
-            try {
-                await db.collection('aportesMetas').add({
-                    meta: meta,
-                    monto: monto,
-                    fecha: fecha
-                });
-                alert('✅ Aporte registrado exitosamente!');
-            } catch (error) {
-                console.error('❌ Error al registrar aporte:', error);
-                alert('❌ Error al registrar aporte.');
-            }
-        }
-        function cargarAportesMetas() {
-            let totalRefrigeradora = 0;
-            let totalLavadora = 0;
-            let totalPowerbank = 0;
-
-            db.collection('aportesMetas').onSnapshot((querySnapshot) => {
-                totalRefrigeradora = 0;
-                totalLavadora = 0;
-                totalPowerbank = 0;
-
-                querySnapshot.forEach((doc) => {
-                    const aporte = doc.data();
-                    if (aporte.meta === 'refrigeradora') totalRefrigeradora += aporte.monto;
-                    if (aporte.meta === 'lavadora') totalLavadora += aporte.monto;
-                    if (aporte.meta === 'powerbank') totalPowerbank += aporte.monto;
-                });
-
-                metaRefrigeradora = Math.min((totalRefrigeradora / preciosMetas.refrigeradora) * 100, 100);
-                metaLavadora = Math.min((totalLavadora / preciosMetas.lavadora) * 100, 100);
-                metaPowerbank = Math.min((totalPowerbank / preciosMetas.powerbank) * 100, 100);
-
-                actualizarPantalla();
-            });
-        }
-        actualizarPantalla();
-        cargarGastos();
-        cargarDeudas();
-        cargarIngresos();
-        cargarAportesMetas();
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash');
-                splash.style.opacity = 0;
-                setTimeout(() => splash.style.display = 'none', 1000);
-            }, 2000); // Espera 2 segundos antes de ocultarlo
-        })
-        function cargarGastos() {
-            db.collection('gastos').onSnapshot((querySnapshot) => {
-                gastoDiego = 0;
-                gastoValery = 0;
-
-                const tablaGastos = document.querySelector('#tabla-gastos tbody');
-                tablaGastos.innerHTML = ''; // Limpiar tabla antes de volver a llenar
-
-                querySnapshot.forEach((doc) => {
-                    const gasto = doc.data();
-                    if (gasto.persona === 'diego') gastoDiego += gasto.monto;
-                    if (gasto.persona === 'valery') gastoValery += gasto.monto;
-
-                    const fila = document.createElement('tr');
-                    fila.innerHTML = `
-                <td>${gasto.persona.charAt(0).toUpperCase() + gasto.persona.slice(1)}</td>
-                <td>${gasto.monto.toFixed(2)}</td>
-                <td>${gasto.categoria}</td>
-                <td>${new Date(gasto.fecha).toLocaleDateString()}</td>
-            `;
-                    tablaGastos.appendChild(fila);
-                });
-
-                actualizarPantalla();
-            });
-        }
-        async function registrarIngresoDiego() {
-            const fecha = new Date().toISOString();
-            try {
-                await db.collection('ingresos').add({
-                    persona: 'diego',
-                    monto: 750,
-                    fecha: fecha
-                });
-                alert('✅ Ingreso de Diego registrado exitosamente!');
-            } catch (error) {
-                console.error('❌ Error al registrar ingreso:', error);
-                alert('❌ Error al registrar ingreso.');
-            }
-        }
-        async function registrarIngresoValery() {
-            const fecha = new Date().toISOString();
-            try {
-                await db.collection('ingresos').add({
-                    persona: 'valery',
-                    monto: 282.5,
-                    fecha: fecha
-                });
-                alert('✅ Ingreso de Valery registrado exitosamente!');
-            } catch (error) {
-                console.error('❌ Error al registrar ingreso:', error);
-                alert('❌ Error al registrar ingreso.');
-            }
-        }
-        function cargarIngresos() {
-            db.collection('ingresos').onSnapshot((querySnapshot) => {
-                ingresoDiego = 0;
-                ingresoValery = 0;
-
-                querySnapshot.forEach((doc) => {
-                    const ingreso = doc.data();
-                    if (ingreso.persona === 'diego') ingresoDiego += ingreso.monto;
-                    if (ingreso.persona === 'valery') ingresoValery += ingreso.monto;
-                });
-
-                actualizarPantalla();
-            });
-        }
-        async function registrarFinDeMes() {
-            const fecha = new Date().toISOString();
-            try {
-                // Registrar deuda Diego
-                await db.collection('deudas').add({
-                    persona: 'diego',
-                    monto: 30,
-                    tipo: 'fin de mes',
-                    fecha: fecha
-                });
-
-                // Registrar deuda Valery
-                await db.collection('deudas').add({
-                    persona: 'valery',
-                    monto: 30,
-                    tipo: 'fin de mes',
-                    fecha: fecha
-                });
-
-                alert('✅ Se registraron correctamente los 30 soles de Diego y Valery!');
-            } catch (error) {
-                console.error('❌ Error al registrar fin de mes:', error);
-                alert('❌ Error al registrar fin de mes.');
-            }
-        }
-        const preciosMetas = {
-            refrigeradora: 1200,
-            lavadora: 1000,
-            powerbank: 150
-        };
-        function actualizarImagenesMetas() {
-            // Refrigeradora
-            if (metaRefrigeradora <= 30) {
-                document.getElementById('img-refrigeradora').src = 'img/refrigeradora_1.png';
-            } else if (metaRefrigeradora <= 70) {
-                document.getElementById('img-refrigeradora').src = 'img/refrigeradora_2.png';
-            } else {
-                document.getElementById('img-refrigeradora').src = 'img/refrigeradora_3.png';
-            }
-
-            // Lavadora
-            if (metaLavadora <= 30) {
-                document.getElementById('img-lavadora').src = 'img/lavadora_1.png';
-            } else if (metaLavadora <= 70) {
-                document.getElementById('img-lavadora').src = 'img/lavadora_2.png';
-            } else {
-                document.getElementById('img-lavadora').src = 'img/lavadora_3.png';
-            }
-
-            // Powerbank
-            if (metaPowerbank <= 30) {
-                document.getElementById('img-powerbank').src = 'img/powerbank_1.png';
-            } else if (metaPowerbank <= 70) {
-                document.getElementById('img-powerbank').src = 'img/powerbank_2.png';
-            } else {
-                document.getElementById('img-powerbank').src = 'img/powerbank_3.png';
-            }
-        }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-    </script>
+    <!-- Configuración Firebase -->
+    <script src="firebaseConfig.js"></script>
+    <!-- Lógica principal -->
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <div id="splash">
+        <h1>Bienvenidos Diego y Valery 🚀</h1>
+    </div>
+
+    <h1>🏠 Diego & Valery - Control de gastos</h1>
+    <button id="modo-oscuro-toggle" onclick="toggleModoOscuro()">🌙 Modo Oscuro</button>
+    
+
+    <div id="tabs">
+        <button class="tab-button" onclick="mostrarTab('gastos')">🏠 Gastos</button>
+        <button class="tab-button" onclick="mostrarTab('ingresos')">💵 Ingresos</button>
+        <button class="tab-button" onclick="mostrarTab('deudas')">💰 Deudas</button>
+        <button class="tab-button" onclick="mostrarTab('metas')">🎯 Metas</button>
+    </div>
+
+    <!-- SECCIÓN GASTOS -->
+    <div id="gastos" class="tab-content">
+        <div class="section">
+            <h2>💵 Saldo Disponible:</h2>
+            <p>S/. <span id="saldo-disponible">0.00</span></p>
+        </div>
+
+        <div class="section">
+            <h2>💵 Gastos este mes:</h2>
+            <p>Diego: S/. <span id="gasto-diego">0</span></p>
+            <p>Valery: S/. <span id="gasto-valery">0</span></p>
+        </div>
+
+        <div class="section">
+            <button onclick="agregarGasto()">➕ Añadir gasto</button>
+        </div>
+
+        <div class="section">
+            <h2>📜 Historial de Gastos</h2>
+            <table id="tabla-gastos">
+                <thead>
+                    <tr>
+                        <th>Persona</th>
+                        <th>Monto</th>
+                        <th>Categoría</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECCIÓN INGRESOS -->
+    <div id="ingresos" class="tab-content">
+        <div class="section">
+            <h2>💵 Ingresos este mes:</h2>
+            <p>Diego: S/. <span id="ingreso-diego">0</span></p>
+            <p>Valery: S/. <span id="ingreso-valery">0</span></p>
+        </div>
+
+        <div class="section">
+            <button onclick="registrarIngresoDiego()">➕ Registrar ingreso Diego</button>
+            <button onclick="registrarIngresoValery()">➕ Registrar ingreso Valery</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DEUDAS -->
+    <div id="deudas" class="tab-content">
+        <div class="section">
+            <h2>💰 Deudas de alcancía:</h2>
+            <p>Diego debe: S/. <span id="deuda-diego">0</span></p>
+            <p>Valery debe: S/. <span id="deuda-valery">0</span></p>
+        </div>
+
+        <div class="section">
+            <button onclick="agregarDeuda()">➕ Añadir aporte alcancía</button>
+            <button onclick="registrarFinDeMes()">➕ Registrar fin de mes (30 soles)</button>
+        </div>
+
+        <div class="section">
+            <h2>📜 Historial de Deudas</h2>
+            <table id="tabla-deudas">
+                <thead>
+                    <tr>
+                        <th>Persona</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECCIÓN METAS -->
+    <div id="metas" class="tab-content">
+        <div class="section">
+            <h2>🎯 Metas:</h2>
+
+            <div class="meta">
+                <p>Refrigeradora</p>
+                <img id="img-refrigeradora" src="/img/refri.png" width="120" alt="Refrigeradora">
+                <div class="progress"><div id="meta-refrigeradora" class="progress-bar"></div></div>
+            </div>
+
+            <div class="meta">
+                <p>Lavadora</p>
+                <img id="img-lavadora" src="/img/lavadora.png" width="120" alt="Lavadora">
+                <div class="progress"><div id="meta-lavadora" class="progress-bar"></div></div>
+            </div>
+
+            <div class="meta">
+                <p>Powerbank</p>
+                <img id="img-powerbank" src="/img/pw45.png" width="120" alt="Powerbank">
+                <div class="progress"><div id="meta-powerbank" class="progress-bar"></div></div>
+            </div>
+
+            <div class="meta">
+                <p>Licuadora</p>
+                <img id="img-licuadora" src="/img/licuadora.png" width="120" alt="Licuadora">
+                <div class="progress"><div id="meta-licuadora" class="progress-bar"></div></div>
+            </div>
+
+            <div class="meta">
+                <p>4to Piso</p>
+                <img id="img-cuarto-piso" src="/img/casa4to.png" width="120" alt="4to Piso">
+                <div class="progress"><div id="meta-cuarto-piso" class="progress-bar"></div></div>
+            </div>
+
+            <div class="section">
+                <button onclick="aportarMeta()">➕ Aportar a meta</button>
+            </div>
+        </div>
+    </div>
 
 </body>
-
 </html>
