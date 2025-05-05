@@ -528,133 +528,107 @@ async function eliminarMeta(idMeta) {
     }
 }
 async function registrarIngresosAutomaticos() {
-    const hoy = new Date();
-    const dia = hoy.getDate();
-    const diaSemana = hoy.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
-    const fechaHoy = hoy.toISOString().split('T')[0];
+    const fechaHoy = new Date();
+    const dia = fechaHoy.getDate();
+    const diaSemana = fechaHoy.getDay(); // 0=domingo, 1=lunes, 2=martes...
 
-    try {
-        const snapshot = await db.collection('ingresos')
-            .where('fecha', '==', fechaHoy)
-            .where('tipo', '==', 'automatico')
+    const mes = fechaHoy.getMonth() + 1;
+    const anio = fechaHoy.getFullYear();
+    const fechaISO = fechaHoy.toISOString();
+
+    if (dia === 15 || dia === 30) {
+        // Registrar ingreso de Diego (1500/2) = 750 soles
+        const ingresoDiego = await db.collection('ingresos')
+            .where('persona', '==', 'diego')
+            .where('monto', '==', 750)
+            .where('fecha', '>=', `${anio}-${mes.toString().padStart(2, '0')}-01`)
+            .where('fecha', '<=', `${anio}-${mes.toString().padStart(2, '0')}-31`)
             .get();
 
-        if (!snapshot.empty) {
-            console.log('✅ Ya se registraron ingresos automáticos hoy.');
-            return; // Ya se registraron ingresos hoy
-        }
-
-        // Día 1: Diego y Valery
-        if (dia === 1) {
+        if (ingresoDiego.empty) {
             await db.collection('ingresos').add({
                 persona: 'diego',
                 monto: 750,
-                fecha: hoy.toISOString(),
-                tipo: 'automatico',
-                detalle: 'quincena'
+                fecha: fechaISO
             });
+            console.log('✅ Ingreso automático registrado: Diego');
+        }
+    }
+
+    if (dia === 15 || dia === 30) {
+        // Registrar ingreso de Valery (565/2 aprox) = 282.5 soles
+        const ingresoValery = await db.collection('ingresos')
+            .where('persona', '==', 'valery')
+            .where('monto', '==', 282.5)
+            .where('fecha', '>=', `${anio}-${mes.toString().padStart(2, '0')}-01`)
+            .where('fecha', '<=', `${anio}-${mes.toString().padStart(2, '0')}-31`)
+            .get();
+
+        if (ingresoValery.empty) {
             await db.collection('ingresos').add({
                 persona: 'valery',
-                monto: 480,
-                fecha: hoy.toISOString(),
-                tipo: 'automatico',
-                detalle: 'mensual'
+                monto: 282.5,
+                fecha: fechaISO
             });
-            console.log('✅ Ingresos automáticos día 1 agregados.');
+            console.log('✅ Ingreso automático registrado: Valery');
         }
+    }
 
-        // Día 15: Diego
-        if (dia === 15) {
-            await db.collection('ingresos').add({
-                persona: 'diego',
-                monto: 750,
-                fecha: hoy.toISOString(),
-                tipo: 'automatico',
-                detalle: 'quincena'
-            });
-            console.log('✅ Ingreso automático de Diego (día 15) agregado.');
-        }
+    if (diaSemana === 1) { // Lunes
+        // Registrar ingreso semanal de Valery (100 soles)
+        const ingresoSemanalValery = await db.collection('ingresos')
+            .where('persona', '==', 'valery')
+            .where('monto', '==', 100)
+            .where('fecha', '>=', `${anio}-${mes.toString().padStart(2, '0')}-01`)
+            .where('fecha', '<=', `${anio}-${mes.toString().padStart(2, '0')}-31`)
+            .get();
 
-        // Todos los lunes (díaSemana === 1)
-        if (diaSemana === 1) {
+        if (ingresoSemanalValery.empty) {
             await db.collection('ingresos').add({
                 persona: 'valery',
                 monto: 100,
-                fecha: hoy.toISOString(),
-                tipo: 'automatico',
-                detalle: 'semanal'
+                fecha: fechaISO
             });
-            console.log('✅ Ingreso semanal de Valery agregado.');
+            console.log('✅ Ingreso semanal de Valery registrado');
         }
-
-    } catch (error) {
-        console.error('❌ Error en registrarIngresosAutomaticos:', error);
     }
 }
 async function registrarGastosFijos() {
-    const hoy = new Date();
-    const dia = hoy.getDate();
-    const fechaHoy = hoy.toISOString().split('T')[0];
+    const fechaHoy = new Date();
+    const dia = fechaHoy.getDate();
+    const mes = fechaHoy.getMonth() + 1;
+    const anio = fechaHoy.getFullYear();
+    const fechaISO = fechaHoy.toISOString();
 
-    const tipoCambioDolar = 3.70; // Puedes cambiarlo cuando quieras actualizarlo
+    // Gastos fijos a verificar
+    const gastosFijos = [
+        { persona: 'diego', monto: 34.95, categoria: 'celular', diaFijo: 5 },
+        { persona: 'diego', monto: 96.00, categoria: 'deuda bbva', diaFijo: 5 },
+        { persona: 'diego', monto: 20 * 3.8, categoria: 'chatgpt', diaFijo: 8 }, // 20 dólares * 3.8 soles/dólar
+        { persona: 'diego', monto: 150.00, categoria: 'aporte casa', diaFijo: 3 }
+    ];
 
-    try {
-        const snapshot = await db.collection('gastos')
-            .where('fecha', '==', fechaHoy)
-            .where('tipo', '==', 'fijo')
-            .get();
+    for (const gasto of gastosFijos) {
+        if (dia === gasto.diaFijo) {
+            const querySnapshot = await db.collection('gastos')
+                .where('persona', '==', gasto.persona)
+                .where('categoria', '==', gasto.categoria)
+                .where('fecha', '>=', `${anio}-${mes.toString().padStart(2, '0')}-01`)
+                .where('fecha', '<=', `${anio}-${mes.toString().padStart(2, '0')}-31`)
+                .get();
 
-        if (!snapshot.empty) {
-            console.log('✅ Ya se registraron gastos fijos hoy.');
-            return;
+            if (querySnapshot.empty) {
+                await db.collection('gastos').add({
+                    persona: gasto.persona,
+                    monto: gasto.monto,
+                    categoria: gasto.categoria,
+                    fecha: fechaISO
+                });
+                console.log(`✅ Gasto fijo registrado: ${gasto.categoria}`);
+            } else {
+                console.log(`⏩ Gasto fijo ya registrado: ${gasto.categoria}`);
+            }
         }
-
-        // Día 3: Aporte casa
-        if (dia === 3) {
-            await db.collection('gastos').add({
-                persona: 'diego',
-                monto: 200, // Cambia 200 por el monto real que debes aportar
-                categoria: 'aporte casa',
-                fecha: hoy.toISOString(),
-                tipo: 'fijo'
-            });
-            console.log('✅ Aporte casa registrado.');
-        }
-
-        // Día 5: Celular y Deuda BBVA
-        if (dia === 5) {
-            await db.collection('gastos').add({
-                persona: 'diego',
-                monto: 34.95,
-                categoria: 'celular',
-                fecha: hoy.toISOString(),
-                tipo: 'fijo'
-            });
-            await db.collection('gastos').add({
-                persona: 'diego',
-                monto: 96,
-                categoria: 'deuda bbva',
-                fecha: hoy.toISOString(),
-                tipo: 'fijo'
-            });
-            console.log('✅ Celular y deuda BBVA registrados.');
-        }
-
-        // Día 8: ChatGPT
-        if (dia === 8) {
-            const montoChatGPT = 20 * tipoCambioDolar;
-            await db.collection('gastos').add({
-                persona: 'diego',
-                monto: montoChatGPT,
-                categoria: 'chatgpt',
-                fecha: hoy.toISOString(),
-                tipo: 'fijo'
-            });
-            console.log('✅ ChatGPT registrado.');
-        }
-
-    } catch (error) {
-        console.error('❌ Error en registrarGastosFijos:', error);
     }
 }
 async function registrarPasaje() {
