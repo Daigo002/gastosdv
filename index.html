@@ -27,6 +27,8 @@
 
     <h1>🏠 Diego & Valery - Control de gastos</h1>
     <button id="modo-oscuro-toggle" onclick="toggleModoOscuro()">🌙 Modo Oscuro</button>
+    <button onclick="resetearTodo()">🧹 Reset General (solo pruebas)</button>
+
     
 
     <div id="tabs">
@@ -34,15 +36,18 @@
         <button class="tab-button" onclick="mostrarTab('ingresos')">💵 Ingresos</button>
         <button class="tab-button" onclick="mostrarTab('deudas')">💰 Deudas</button>
         <button class="tab-button" onclick="mostrarTab('metas')">🎯 Metas</button>
+        <button class="tab-button" onclick="mostrarTab('emergencia')">🚑 Emergencia</button> <!-- NUEVO -->
+        <button onclick="registrarPasaje()">🚌 Registrar Pasaje</button>
+        <button class="tab-button" onclick="mostrarTab('resumen')">📈 Resumen</button>
     </div>
 
     <!-- SECCIÓN GASTOS -->
+    
     <div id="gastos" class="tab-content">
         <div class="section">
             <h2>💵 Saldo Disponible:</h2>
             <p>S/. <span id="saldo-disponible">0.00</span></p>
         </div>
-
         <div class="section">
             <h2>💵 Gastos este mes:</h2>
             <p>Diego: S/. <span id="gasto-diego">0</span></p>
@@ -52,7 +57,6 @@
         <div class="section">
             <button onclick="agregarGasto()">➕ Añadir gasto</button>
         </div>
-
         <div class="section">
             <h2>📜 Historial de Gastos</h2>
             <table id="tabla-gastos">
@@ -68,6 +72,13 @@
             </table>
         </div>
     </div>
+    <div id="emergencia" class="tab-content">
+        <div class="section">
+            <h2>🚑 Ahorros de Emergencia</h2>
+            <p>💸 Diego: <span id="ahorro-diego">900</span> soles</p>
+            <p>💸 Valery: <span id="ahorro-valery">400</span> soles</p>
+        </div>
+    </div>   
 
     <!-- SECCIÓN INGRESOS -->
     <div id="ingresos" class="tab-content">
@@ -81,15 +92,36 @@
             <button onclick="registrarIngresoDiego()">➕ Registrar ingreso Diego</button>
             <button onclick="registrarIngresoValery()">➕ Registrar ingreso Valery</button>
         </div>
+        <div class="section">
+            <h2>📜 Historial de Ingresos</h2>
+            <table id="tabla-ingresos">
+                <thead>
+                    <tr>
+                        <th>Persona</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- SECCIÓN DEUDAS -->
     <div id="deudas" class="tab-content">
         <div class="section">
-            <h2>💰 Deudas de alcancía:</h2>
-            <p>Diego debe: S/. <span id="deuda-diego">0</span></p>
-            <p>Valery debe: S/. <span id="deuda-valery">0</span></p>
+            <h2>💰 Deudas de alcancías:</h2>
+            <h3>Alcancía de Lisuras</h3>
+            <p>Diego debe: S/. <span id="deuda-diego-lisura">0</span></p>
+            <p>Valery debe: S/. <span id="deuda-valery-lisura">0</span></p>
+        
+            <h3>Alcancía de Ahorro Mensual</h3>
+            <p>Diego debe: S/. <span id="deuda-diego-ahorro">0</span></p>
+            <p>Valery debe: S/. <span id="deuda-valery-ahorro">0</span></p>
         </div>
+        
 
         <div class="section">
             <button onclick="agregarDeuda()">➕ Añadir aporte alcancía</button>
@@ -103,6 +135,7 @@
                     <tr>
                         <th>Persona</th>
                         <th>Monto</th>
+                        <th>Tipo</th>
                         <th>Fecha</th>
                     </tr>
                 </thead>
@@ -111,46 +144,30 @@
         </div>
     </div>
 
-    <!-- SECCIÓN METAS -->
-    <div id="metas" class="tab-content">
+<!-- SECCIÓN METAS -->
+<div id="metas" class="tab-content">
+    <div class="section">
+        <h2>🎯 Metas Dinámicas:</h2>
+
         <div class="section">
-            <h2>🎯 Metas:</h2>
+            <button onclick="agregarMeta()">➕ Crear nueva meta</button>
+            <button onclick="cargarMetas()">🔄 Actualizar metas</button>
+        </div>
 
-            <div class="meta">
-                <p>Refrigeradora</p>
-                <img id="img-refrigeradora" src="/img/refri.png" width="120" alt="Refrigeradora">
-                <div class="progress"><div id="meta-refrigeradora" class="progress-bar"></div></div>
-            </div>
-
-            <div class="meta">
-                <p>Lavadora</p>
-                <img id="img-lavadora" src="/img/lavadora.png" width="120" alt="Lavadora">
-                <div class="progress"><div id="meta-lavadora" class="progress-bar"></div></div>
-            </div>
-
-            <div class="meta">
-                <p>Powerbank</p>
-                <img id="img-powerbank" src="/img/pw45.png" width="120" alt="Powerbank">
-                <div class="progress"><div id="meta-powerbank" class="progress-bar"></div></div>
-            </div>
-
-            <div class="meta">
-                <p>Licuadora</p>
-                <img id="img-licuadora" src="/img/licuadora.png" width="120" alt="Licuadora">
-                <div class="progress"><div id="meta-licuadora" class="progress-bar"></div></div>
-            </div>
-
-            <div class="meta">
-                <p>4to Piso</p>
-                <img id="img-cuarto-piso" src="/img/casa4to.png" width="120" alt="4to Piso">
-                <div class="progress"><div id="meta-cuarto-piso" class="progress-bar"></div></div>
-            </div>
-
-            <div class="section">
-                <button onclick="aportarMeta()">➕ Aportar a meta</button>
-            </div>
+        <div class="section-metas">
+            <!-- Aquí se cargarán automáticamente las metas desde Firebase -->
         </div>
     </div>
+</div>
+<div id="resumen" class="tab-content">
+    <div class="section">
+        <h2>📈 Resumen Financiero del Mes</h2>
+        <p><strong>Total de Ingresos:</strong> S/. <span id="total-ingresos">0.00</span></p>
+        <p><strong>Total de Gastos:</strong> S/. <span id="total-gastos">0.00</span></p>
+        <p><strong>Ahorro del Mes:</strong> S/. <span id="ahorro-mes">0.00</span></p>
+        <p><strong>Saldo Final:</strong> <span id="saldo-final" style="font-weight: bold;">0.00</span></p>
+    </div>
+</div>
 
 </body>
 </html>
