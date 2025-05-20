@@ -256,4 +256,19 @@ tr:nth-child(even) {
     background-color: #ddd3d3;
     border-left: 5px solid #f44336;
 }
+#calendario-gastos {
+    max-width: 100%;
+    margin: 20px auto;
+}
 
+#historial table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+#historial th, #historial td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}

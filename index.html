@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,22 @@
 
     <!-- Estilos -->
     <link rel="stylesheet" href="style.css">
+    <!-- jsPDF core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- AutoTable para tablas bonitas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- SheetJS para exportar a Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- Firebase SDKs -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mini.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
 
 
     <!-- Configuración Firebase -->
@@ -19,6 +31,7 @@
     <!-- Lógica principal -->
     <script src="app.js" defer></script>
 </head>
+
 <body>
 
     <div id="splash">
@@ -29,7 +42,7 @@
     <button id="modo-oscuro-toggle" onclick="toggleModoOscuro()">🌙 Modo Oscuro</button>
     <button onclick="resetearTodo()">🧹 Reset General (solo pruebas)</button>
 
-    
+
 
     <div id="tabs">
         <button class="tab-button" onclick="mostrarTab('gastos')">🏠 Gastos</button>
@@ -39,10 +52,11 @@
         <button class="tab-button" onclick="mostrarTab('emergencia')">🚑 Emergencia</button> <!-- NUEVO -->
         <button onclick="registrarPasaje()">🚌 Registrar Pasaje</button>
         <button class="tab-button" onclick="mostrarTab('resumen')">📈 Resumen</button>
+        <button class="tab-button" onclick="mostrarTab('historial')">📂 Historial</button>
     </div>
 
     <!-- SECCIÓN GASTOS -->
-    
+
     <div id="gastos" class="tab-content">
         <div class="section">
             <h2>💵 Saldo Disponible:</h2>
@@ -78,7 +92,7 @@
             <p>💸 Diego: <span id="ahorro-diego">900</span> soles</p>
             <p>💸 Valery: <span id="ahorro-valery">400</span> soles</p>
         </div>
-    </div>   
+    </div>
 
     <!-- SECCIÓN INGRESOS -->
     <div id="ingresos" class="tab-content">
@@ -103,7 +117,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
+
                 </tbody>
             </table>
         </div>
@@ -116,12 +130,12 @@
             <h3>Alcancía de Lisuras</h3>
             <p>Diego debe: S/. <span id="deuda-diego-lisura">0</span></p>
             <p>Valery debe: S/. <span id="deuda-valery-lisura">0</span></p>
-        
+
             <h3>Alcancía de Ahorro Mensual</h3>
             <p>Diego debe: S/. <span id="deuda-diego-ahorro">0</span></p>
             <p>Valery debe: S/. <span id="deuda-valery-ahorro">0</span></p>
         </div>
-        
+
 
         <div class="section">
             <button onclick="agregarDeuda()">➕ Añadir aporte alcancía</button>
@@ -144,30 +158,60 @@
         </div>
     </div>
 
-<!-- SECCIÓN METAS -->
-<div id="metas" class="tab-content">
-    <div class="section">
-        <h2>🎯 Metas Dinámicas:</h2>
+    <!-- SECCIÓN METAS -->
+    <div id="metas" class="tab-content">
+        <div class="section">
+            <h2>🎯 Metas Dinámicas:</h2>
+
+            <div class="section">
+                <button onclick="agregarMeta()">➕ Crear nueva meta</button>
+                <button onclick="cargarMetas()">🔄 Actualizar metas</button>
+            </div>
+
+            <div class="section-metas">
+                <!-- Aquí se cargarán automáticamente las metas desde Firebase -->
+            </div>
+        </div>
+    </div>
+    <div id="resumen" class="tab-content">
 
         <div class="section">
-            <button onclick="agregarMeta()">➕ Crear nueva meta</button>
-            <button onclick="cargarMetas()">🔄 Actualizar metas</button>
+            <h2>📈 Resumen Financiero del Mes</h2>
+            <p><strong>Saldo Diario Proyectado:</strong> S/. <span id="saldo-diario">0.00</span></p>
+            <p><strong>Total de Ingresos:</strong> S/. <span id="total-ingresos">0.00</span></p>
+            <p><strong>Total de Gastos:</strong> S/. <span id="total-gastos">0.00</span></p>
+            <p><strong>Ahorro del Mes:</strong> S/. <span id="ahorro-mes">0.00</span></p>
+            <p><strong>Saldo Final:</strong> <span id="saldo-final" style="font-weight: bold;">0.00</span></p>
         </div>
+        <div class="section">
+            <h2>📅 Calendario de Gastos</h2>
+            <div id="calendario-gastos"></div>
+        </div>
+        <button onclick="cerrarMes()">🔒 Cerrar Mes</button>
 
-        <div class="section-metas">
-            <!-- Aquí se cargarán automáticamente las metas desde Firebase -->
+    </div>
+
+    <div id="historial" class="tab-content">
+        <div class="section">
+            <h2>📂 Historial de Meses Cerrados</h2>
+            <button onclick="exportarHistorialCierres()">📤 Exportar a Excel</button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Año</th>
+                        <th>Ingresos (S/)</th>
+                        <th>Gastos (S/)</th>
+                        <th>Ahorro (S/)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-cierres">
+                    <!-- Aquí se cargan los datos -->
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
-<div id="resumen" class="tab-content">
-    <div class="section">
-        <h2>📈 Resumen Financiero del Mes</h2>
-        <p><strong>Total de Ingresos:</strong> S/. <span id="total-ingresos">0.00</span></p>
-        <p><strong>Total de Gastos:</strong> S/. <span id="total-gastos">0.00</span></p>
-        <p><strong>Ahorro del Mes:</strong> S/. <span id="ahorro-mes">0.00</span></p>
-        <p><strong>Saldo Final:</strong> <span id="saldo-final" style="font-weight: bold;">0.00</span></p>
-    </div>
-</div>
-
 </body>
+
 </html>

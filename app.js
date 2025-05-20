@@ -340,6 +340,8 @@ function activarTab(tabId) {
     // 👇 Nuevo: Si el tab es "resumen", calcular resumen
     if (tabId === 'resumen') {
         calcularResumenMensual();
+        cargarCalendarioGastos(); // 👈 AGREGAR ESTA LÍNEA
+
     }
 }
 async function verificarFinDeMes() {
@@ -708,6 +710,10 @@ async function calcularResumenMensual() {
 
         // Ahorro = ingresos - gastos
         const ahorroMes = totalIngresos - totalGastos;
+const diasDelMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+const saldoDiario = totalIngresos > 0 ? (totalIngresos - totalGastos) / diasDelMes : 0;
+
+document.getElementById('saldo-diario').textContent = saldoDiario.toFixed(2);
 
         // Mostrar en HTML
         document.getElementById('total-ingresos').textContent = totalIngresos.toFixed(2);
@@ -721,4 +727,170 @@ async function calcularResumenMensual() {
     } catch (error) {
         console.error('❌ Error al calcular resumen mensual:', error);
     }
+}
+async function cargarCalendarioGastos() {
+    const calendarioContainer = document.getElementById('calendario-gastos');
+    calendarioContainer.innerHTML = ''; // limpia antes de renderizar
+
+    const calendar = new FullCalendar.Calendar(calendarioContainer, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        height: 'auto',
+        events: await obtenerMovimientosComoEventos(),
+        eventClick: function(info) {
+            const { title, start } = info.event;
+            const fecha = start.toLocaleDateString();
+            Swal.fire(`🧾 ${fecha}`, title, 'info');
+        }
+    });
+
+    calendar.render();
+}
+
+async function obtenerMovimientosComoEventos() {
+    const hoy = new Date();
+    const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString();
+    const ultimoDiaMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString();
+
+    const eventos = [];
+
+    // 🔴 Cargar gastos
+    const gastosSnapshot = await db.collection('gastos')
+        .where('fecha', '>=', primerDiaMes)
+        .where('fecha', '<=', ultimoDiaMes)
+        .get();
+
+    gastosSnapshot.forEach(doc => {
+        const gasto = doc.data();
+        const monto = gasto.monto;
+        const fecha = gasto.fecha.split('T')[0];
+
+        let color = '';
+        if (monto <= 50) color = 'green';
+        else if (monto <= 200) color = 'orange';
+        else color = 'red';
+
+        eventos.push({
+            title: `💸 ${gasto.persona} gastó S/. ${monto.toFixed(2)} (${gasto.categoria})`,
+            start: fecha,
+            color: color
+        });
+    });
+
+    // 🔵 Cargar ingresos
+    const ingresosSnapshot = await db.collection('ingresos')
+        .where('fecha', '>=', primerDiaMes)
+        .where('fecha', '<=', ultimoDiaMes)
+        .get();
+
+    ingresosSnapshot.forEach(doc => {
+        const ingreso = doc.data();
+        const fecha = ingreso.fecha.split('T')[0];
+
+        eventos.push({
+            title: `📥 ${ingreso.persona} recibió S/. ${ingreso.monto.toFixed(2)}`,
+            start: fecha,
+            color: '#2196f3' // Azul
+        });
+    });
+
+    return eventos;
+}
+async function cerrarMes() {
+    const hoy = new Date();
+    const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString();
+    const ultimoDiaMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString();
+    const mesNombre = hoy.toLocaleString('default', { month: 'long' }).toUpperCase();
+
+    let totalIngresos = 0;
+    let totalGastos = 0;
+
+    const ingresos = await db.collection('ingresos')
+        .where('fecha', '>=', primerDiaMes)
+        .where('fecha', '<=', ultimoDiaMes)
+        .get();
+    ingresos.forEach(doc => totalIngresos += doc.data().monto);
+
+    const gastos = await db.collection('gastos')
+        .where('fecha', '>=', primerDiaMes)
+        .where('fecha', '<=', ultimoDiaMes)
+        .get();
+    gastos.forEach(doc => totalGastos += doc.data().monto);
+
+    const resumen = {
+        mes: mesNombre,
+        anio: hoy.getFullYear(),
+        ingresos: totalIngresos,
+        gastos: totalGastos,
+        ahorro: totalIngresos - totalGastos,
+        timestamp: hoy.toISOString()
+    };
+
+    await db.collection('cierres').add(resumen);
+
+    Swal.fire({
+        icon: 'success',
+        title: '✅ Mes cerrado',
+        text: `Resumen de ${mesNombre} guardado correctamente.`
+    });
+}
+async function cargarHistorialCierres() {
+    const tbody = document.getElementById('tabla-cierres');
+    tbody.innerHTML = '';
+
+    const snapshot = await db.collection('cierres').orderBy('timestamp', 'desc').get();
+
+    snapshot.forEach(doc => {
+        const cierre = doc.data();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${cierre.mes}</td>
+            <td>${cierre.anio}</td>
+            <td>${cierre.ingresos.toFixed(2)}</td>
+            <td>${cierre.gastos.toFixed(2)}</td>
+            <td>${cierre.ahorro.toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+function activarTab(tabId) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    document.getElementById(tabId).classList.add('active');
+
+    if (tabId === 'resumen') {
+        calcularResumenMensual();
+        cargarCalendarioGastos();
+    }
+
+    if (tabId === 'historial') {
+        cargarHistorialCierres();
+    }
+}
+async function exportarHistorialCierres() {
+    const snapshot = await db.collection('cierres').orderBy('timestamp', 'desc').get();
+
+    const data = [];
+    data.push(["Mes", "Año", "Ingresos", "Gastos", "Ahorro"]);
+
+    snapshot.forEach(doc => {
+        const cierre = doc.data();
+        data.push([
+            cierre.mes,
+            cierre.anio,
+            cierre.ingresos.toFixed(2),
+            cierre.gastos.toFixed(2),
+            cierre.ahorro.toFixed(2)
+        ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Historial");
+
+    const fecha = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(wb, `historial_financiero_${fecha}.xlsx`);
 }
